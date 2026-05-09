@@ -25,11 +25,9 @@ class IRGenerator:
 
     def gen(self, node):
         if isinstance(node, Program):
-            # emit function definitions first (so labels exist)
             for s in node.statements:
                 if isinstance(s, FuncDef):
                     self.gen(s)
-            # then emit top-level statements
             for s in node.statements:
                 if not isinstance(s, FuncDef):
                     self.gen(s)
@@ -114,23 +112,16 @@ class IRGenerator:
             self.emit("LABEL", end)
 
         elif isinstance(node, FuncDef):
-            # function entry label
             fname = f"func_{node.name}"
             self.emit("LABEL", fname)
 
-            # Map VM arguments (arg0, arg1, ...) into named parameters
-            # node.params is list of (type, name)
             for i, param in enumerate(node.params):
                 ptype, pname = param
-                # store pname = arg<i>
-                # This makes parameter names available inside function body
                 self.emit("STORE", pname, f"arg{i}")
 
-            # function body
             for s in node.body:
                 self.gen(s)
 
-            # ensure a return/ret at end (if function falls off end)
             self.emit("RET")
 
         elif isinstance(node, Return):
@@ -144,7 +135,6 @@ class IRGenerator:
             for a in node.args:
                 at = self.gen(a)
                 arg_temps.append(at)
-            # push arguments in order
             for at in arg_temps:
                 self.emit("PUSH_ARG", at)
             self.emit("CALL", node.name, len(arg_temps))

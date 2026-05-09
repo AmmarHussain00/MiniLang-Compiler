@@ -58,7 +58,6 @@ if __name__=="__main__":
             code = f.read()
         compile_and_run(code)
     else:
-        # Default sample if no file provided
         sample = """
 int x = 5;
 int y = 10;

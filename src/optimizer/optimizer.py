@@ -1,14 +1,9 @@
 from src.ir.ir_generator import Instr
 
 class IROptimizer:
-    """
-    Simple IR Optimizer that performs:
-    1. Constant Folding: e.g., 5 + 10 becomes 15 at compile time.
-    2. Constant Propagation: replacing temp variables with their known constant values.
-    """
     def __init__(self, instrs):
         self.instrs = instrs
-        self.constants = {}  # Tracks known values of temps/vars
+        self.constants = {}
 
     def optimize(self):
         optimized_code = []
@@ -27,9 +22,7 @@ class IROptimizer:
                 lv = self.constants.get(l)
                 rv = self.constants.get(r)
 
-                # Check if both operands are known constants
                 if lv is not None and rv is not None and isinstance(lv, (int, float)) and isinstance(rv, (int, float)):
-                    # Perform Constant Folding
                     res = 0
                     try:
                         if op == "ADD": res = lv + rv
@@ -37,8 +30,7 @@ class IROptimizer:
                         elif op == "MUL": res = lv * rv
                         elif op == "DIV": res = lv / rv if rv != 0 else 0
                         elif op == "MOD": res = lv % rv if rv != 0 else 0
-                        
-                        # Replace math instruction with a LOAD_CONST
+
                         self.constants[dest] = res
                         optimized_code.append(Instr("LOAD_CONST", (dest, res)))
                     except:
@@ -56,7 +48,6 @@ class IROptimizer:
                 optimized_code.append(ins)
 
             elif op in ("LABEL", "JUMP", "JUMP_IF_FALSE", "CALL"):
-                # Safety: Reset constant tracking across branches/calls to avoid incorrect propagation
                 self.constants = {}
                 optimized_code.append(ins)
             

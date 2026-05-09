@@ -133,9 +133,7 @@ class VM:
                 self.ret_temp = self.read_val(src)
 
             elif op == "RET":
-                # FIX: if RET appears at top-level (no call frames), ignore it.
                 if not self.call_stack:
-                    # ignore stray top-level RET and continue execution
                     pc += 1
                     continue
                 frame = self.call_stack.pop()
@@ -148,28 +146,22 @@ class VM:
             pc += 1
 
     def read_val(self, x):
-        # immediate python values
         if isinstance(x, (int, float, bool)):
             return x
 
         if isinstance(x, str):
-            # 1) temporary
             if x in self.temps:
                 return self.temps.get(x)
-            # 2) current frame locals/args
             if self.call_stack:
                 top = self.call_stack[-1]
                 if x in top.vars:
                     return top.vars.get(x)
-            # 3) globals
             if x in self.globals:
                 return self.globals.get(x)
-            # 4) numeric literal string?
             try:
                 if "." in x:
                     return float(x)
                 return int(x)
             except:
-                # 5) fallback: treat as string literal
                 return x
         return x
